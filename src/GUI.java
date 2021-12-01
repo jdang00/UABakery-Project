@@ -7,7 +7,13 @@ import javax.swing.table.DefaultTableModel;
 
 import dao.*;
 import entities.BakeryItem;
+import entities.Inventory;
+import entities.Order;
+import entities.Recipe;
+import entities.TransactionJournal;
+import tools.MoneyHandler;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /*
@@ -25,14 +31,20 @@ import java.util.List;
 public class GUI extends javax.swing.JFrame {
 
 
+    private BakeryItem selectedBakeryItem;
+
+
     //Tyler: "Table Models"
-    private DefaultTableModel bakeryTable;
+    private DefaultTableModel bakeryTableModel;
     private DefaultTableModel ordersTableModel;
     private DefaultTableModel transactionsTableModel;
     private DefaultTableModel inventoryTableModel;
 
     //Tyler: "DAO"
     BakeryItemDAO bakeryDAO = new BakeryItemDAO();
+    InventoryDAO inventoryDAO = new InventoryDAO();
+    TransactionJournalDAO transactionJournalDAO = new TransactionJournalDAO();
+    OrderDAO orderDAO = new OrderDAO();
 
     /**
      * Creates new form GUI
@@ -45,35 +57,225 @@ public class GUI extends javax.swing.JFrame {
 
 
     private void initBakeryTable(){
-        bakeryTable = new DefaultTableModel();
-        bakeryTable.addColumn("ID");
-        bakeryTable.addColumn("Name");
-        bakeryTable.addColumn("Description");
-        bakeryTable.addColumn("Price");
-        bakeryMenu.setModel(bakeryTable);
+        bakeryTableModel = new DefaultTableModel();
+        bakeryTableModel.addColumn("ID");
+        bakeryTableModel.addColumn("Name");
+        bakeryTableModel.addColumn("Description");
+        bakeryTableModel.addColumn("Price");
+        bakeryMenu.setModel(bakeryTableModel);
     }
 
     public void refreshBakeryItems(){
-        bakeryTable.setNumRows(0);
+        bakeryTableModel.setNumRows(0);
 
-        List<BakeryItem> myList = bakeryDAO.getItems();
+        ArrayList<BakeryItem> myList = bakeryDAO.getItems();
         
 
         for (int i = 0; i < myList.size(); i++) {
             int id = myList.get(i).id;
             String name = myList.get(i).name;
             String description = myList.get(i).description;
-            double price = myList.get(i).price;
+            float price = myList.get(i).price;
 
             String[] row = new String[4];
-            row[0] = id + "";
+            row[0] = String.valueOf(id);
             row[1] = name;
             row[2] = description;
-            row[3] = "$" + price + "0";
+            row[3] = MoneyHandler.getFormattedMoney(price);
 
-            bakeryTable.addRow(row);
+            bakeryTableModel.addRow(row);
         }
     }
+
+    private void refreshTransactionJournalTable( DefaultTableModel model ){
+        model.setNumRows(0);
+
+
+        ArrayList<TransactionJournal> myList = transactionJournalDAO.getItems();
+        
+
+        for (int i = 0; i < myList.size(); i++) {
+            int id = myList.get(i).journalID;
+            String description = myList.get(i).journalDescription;
+            float amount = myList.get(i).journalAmount;
+            String timeStamp = myList.get(i).timeStamp;
+
+            String[] row = new String[4];
+            row[0] = String.valueOf(id);
+            row[1] = description;
+            row[2] = MoneyHandler.getFormattedMoney(amount);
+            row[3] = timeStamp;
+
+            model.addRow(row);
+        }
+
+    }
+
+    private void refreshOrderTable( DefaultTableModel model ){
+        model.setNumRows(0);
+
+        ArrayList<Order> myList = orderDAO.getItems();
+        
+
+        for (int i = 0; i < myList.size(); i++) {
+            int id = myList.get(i).orderID;
+            String date = myList.get(i).date;
+            String time = myList.get(i).time;
+            int customerID = myList.get(i).customerID;
+
+            String[] row = new String[4];
+            row[0] = String.valueOf(id);
+            row[1] = date;
+            row[2] = time;
+            row[3] = String.valueOf(customerID);
+
+            model.addRow(row);
+        }
+    }
+
+    private void refreshInventoryTable( DefaultTableModel model ){
+        model.setNumRows(0);
+
+        ArrayList<Inventory> myList = inventoryDAO.getItems();
+        
+
+        for (int i = 0; i < myList.size(); i++) {
+            int id = myList.get(i).id;
+            String name = myList.get(i).name;
+            String description = myList.get(i).description;
+            int quantity = myList.get(i).quantity;
+            int reorderAmount = myList.get(i).reorderAmount;
+            float reorderPrice = myList.get(i).reorderPrice;
+
+            String[] row = new String[6];
+            row[0] = String.valueOf(id);
+            row[1] = name;
+            row[2] = description;
+            row[3] = String.valueOf(quantity);
+            row[4] = String.valueOf(reorderAmount);
+            row[5] = MoneyHandler.getFormattedMoney(reorderPrice);
+
+            model.addRow(row);
+        }
+    }
+
+
+    private void validatePurchase(){
+        
+        boolean enoughInventory = checkInventory();
+
+
+        if(enoughInventory){
+
+            for(Recipe recipie : selectedBakeryItem.recipeItems){
+                inventoryDAO.removeInventory(getQuantity() * recipie.invQuantityNeeded, recipie.invID);
+            }
+            
+            float userAmountPurchased =  getQuantity() * selectedBakeryItem.price;
+            
+            TransactionJournal journal = createTransactionJournal(getJournalPurchaseDesc(selectedBakeryItem.name, getQuantity()), userAmountPurchased);
+            transactionJournalDAO.insert(journal);
+
+            transactionJournalDAO.addCompanyFunds(userAmountPurchased);
+
+
+            System.out.println("Item purhcased! Company gained " + userAmountPurchased + " cash, and the user ordered " + getJournalPurchaseDesc(selectedBakeryItem.name, getQuantity()));
+
+
+
+        }else{
+            //Tyler: "If there isn't enough companyFunds, decline the entire order'"
+            System.out.println("Not enough company funds!");
+        }
+        
+        
+        
+        clearCart();
+            
+        
+    }
+
+
+    private boolean checkInventory(){
+        
+        for(Recipe recipe : selectedBakeryItem.recipeItems){
+
+            //Tyler: "If there isn't enough inventory, order some more."
+
+            int quantityRequested = recipe.invQuantityNeeded * getQuantity();
+            Inventory cInventory = inventoryDAO.getItem(recipe.invID);
+            int currentQuantity = cInventory.quantity;
+
+            if( quantityRequested > currentQuantity ){
+                if(!orderdMoreInventory(cInventory, quantityRequested - currentQuantity, cInventory.reorderPrice))
+                    return false;
+            }
+        }
+
+        return true;
+        
+    }
+
+
+    private int getQuantity(){
+        //Tyler :"TODO: Error risk"
+
+        try{
+            int num = Integer.parseInt(qty.getText());
+            return num;
+        }catch(Exception e){
+            qty.setText("0");
+            return -1;
+        }
+    }
+
+
+    private boolean orderdMoreInventory(Inventory inventory, int amountNeeded, float costs){
+
+        int companyFunds = transactionJournalDAO.getCompanyFunds();
+
+        float inventoryCosts = MoneyHandler.getRoundedMoney(amountNeeded * costs);
+
+        if(companyFunds < inventoryCosts)
+            return false;
+        else {
+            inventoryDAO.addInventory(amountNeeded, inventory.id);
+
+            TransactionJournal journal = createTransactionJournal(getJournalReorderDesc(inventory.name, amountNeeded), -costs);
+            transactionJournalDAO.insert(journal);
+
+            transactionJournalDAO.subtractCompanyFunds(inventoryCosts);
+            return true;
+        }
+
+
+        
+    }
+
+
+    private void clearCart(){
+        selectedBakeryItem = null;
+        qty.setText("0");
+    }
+
+    private String getJournalReorderDesc(String inventoryItem, int quantity){
+        return "ORDERING INVENTORY ITEM " + inventoryItem + "WITH A QUANTITY OF " + String.valueOf(quantity);
+    }
+
+
+    private String getJournalPurchaseDesc(String bakeryItem, int quantity){
+        return "SUCCESSFUL ORDER OF " + bakeryItem + " x" + String.valueOf(quantity);
+    }
+
+    private TransactionJournal createTransactionJournal(String description, float amount){
+        TransactionJournal journal  = new TransactionJournal();
+        journal.journalDescription = description;
+        journal.journalAmount = amount;
+
+        return journal;
+
+    }
+
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -502,6 +704,7 @@ public class GUI extends javax.swing.JFrame {
         mainPanel.revalidate();     
         
         
+        
     }//GEN-LAST:event_menuButtonActionPerformed
 
     private void shopButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_shopButtonActionPerformed
@@ -524,6 +727,7 @@ public class GUI extends javax.swing.JFrame {
         
         omniTable.setModel(transactionsTableModel);
 
+        refreshTransactionJournalTable(transactionsTableModel);
         
         
     }//GEN-LAST:event_journalButtonActionPerformed
@@ -537,6 +741,8 @@ public class GUI extends javax.swing.JFrame {
         ordersTableModel.addColumn("Customer ID");
         
         omniTable.setModel(ordersTableModel);
+
+        refreshOrderTable(ordersTableModel);
         
         
     }//GEN-LAST:event_ordersButtonActionPerformed
@@ -554,6 +760,9 @@ public class GUI extends javax.swing.JFrame {
         inventoryTableModel.addColumn("Reorder Price");
 
         omniTable.setModel(inventoryTableModel);
+
+        refreshInventoryTable(inventoryTableModel);
+
     }//GEN-LAST:event_inventoryButtonActionPerformed
 
     /**

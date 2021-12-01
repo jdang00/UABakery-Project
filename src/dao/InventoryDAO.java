@@ -43,10 +43,9 @@ public class InventoryDAO implements UABakeryDataAccessObject<Inventory> {
         return null;
     }
     
-    public void updateInventory(int totalAmount, int invID){
+    public void removeInventory(int totalAmount, int invID){
         try{
             Connection con = ConnectionObj.getConnection();
-            ArrayList<Inventory> list = new ArrayList<>();
             PreparedStatement pst = con.prepareStatement("UPDATE INVENTORY SET INV_QTY_ONHAND = INV_QTY_ONHAND - ? WHERE INV_ID = ?");
             pst.setInt(1, totalAmount);
             pst.setInt(2, invID);
@@ -57,6 +56,20 @@ public class InventoryDAO implements UABakeryDataAccessObject<Inventory> {
             e.printStackTrace();
         }
         
+    }
+
+    public void addInventory(int totalAmount, int invID){
+        try{
+            Connection con = ConnectionObj.getConnection();
+            PreparedStatement pst = con.prepareStatement("UPDATE INVENTORY SET INV_QTY_ONHAND = INV_QTY_ONHAND + ? WHERE INV_ID = ?");
+            pst.setInt(1, totalAmount);
+            pst.setInt(2, invID);
+            pst.execute();
+            con.close();
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    
     }
     
     public Inventory getItem(int id){

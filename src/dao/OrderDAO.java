@@ -9,11 +9,11 @@ import interfaces.UABakeryDataAccessObject;
 public class OrderDAO implements UABakeryDataAccessObject<Order> {
 
     @Override
-    public ArrayList getItems() {
+    public ArrayList<Order> getItems() {
         try{
             Connection con = ConnectionObj.getConnection();
             ArrayList<Order> list = new ArrayList<>();
-            ResultSet rst = con.prepareStatement("SELECT * FROM ORDER").executeQuery();
+            ResultSet rst = con.prepareStatement("SELECT * FROM ORDERS").executeQuery();
 
             while(rst.next()){
                 

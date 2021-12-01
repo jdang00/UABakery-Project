@@ -54,15 +54,63 @@ public class TransactionJournalDAO implements UABakeryDataAccessObject<Transacti
     public void insert(TransactionJournal journal) {
         try{
             Connection con = ConnectionObj.getConnection();
-            PreparedStatement pst = con.prepareStatement("INSERT INTO TRANSACTION_JOURNAL VALUES(DEFAULT, ?, ?, ?)");
+            PreparedStatement pst = con.prepareStatement("INSERT INTO TRANSACTION_JOURNAL VALUES(DEFAULT, ?, ?, DEFAULT)");
             pst.setString(1, journal.journalDescription);
             pst.setFloat(2, journal.journalAmount);
-            pst.setString(3, journal.timeStamp);
             pst.execute();
             con.close();
         }catch(Exception e){
             e.printStackTrace();
         }
     }
+
+    public int getCompanyFunds(){
+        try{
+            Connection con = ConnectionObj.getConnection();
+            
+            ResultSet rst = con.prepareStatement("SELECT JOURNAL_AMOUNT FROM TRANSACTION_JOURNAL WHERE JOURNAL_ID = 1").executeQuery();
+
+            int companyFunds = rst.getInt(1);
+
+            ConnectionObj.closeConnection();
+
+            return companyFunds;
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+        return -1;
+    }
+
+    public void addCompanyFunds(float amount){
+        try{
+            Connection con = ConnectionObj.getConnection();
+            PreparedStatement pst = con.prepareStatement("UPDATE TRANSACTION_JOURNAL SET JOURNAL_AMOUNT = JOURNAL_AMOUNT + ? WHERE JOURNAL_ID = 1");
+            pst.setFloat(1, amount);
+            pst.execute();
+            con.close();
+            
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
+
+    public void subtractCompanyFunds(float amount){
+        try{
+            Connection con = ConnectionObj.getConnection();
+            PreparedStatement pst = con.prepareStatement("UPDATE TRANSACTION_JOURNAL SET JOURNAL_AMOUNT = JOURNAL_AMOUNT - ? WHERE JOURNAL_ID = 1");
+
+            
+
+            pst.setFloat(1, amount);
+            pst.execute();
+            con.close();
+            
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    
     
 }

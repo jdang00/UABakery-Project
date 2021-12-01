@@ -63,8 +63,6 @@ public class BakeryItemDAO implements UABakeryDataAccessObject<BakeryItem> {
 
         ArrayList<Recipe> rList = new ArrayList();
 
-        System.out.println("Recipie Gotten");
-
         while(rs2.next()){
             Recipe r = new Recipe();
             r.recipeID = rs2.getInt(1);

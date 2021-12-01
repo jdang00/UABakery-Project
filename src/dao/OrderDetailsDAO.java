@@ -10,7 +10,7 @@ import interfaces.UABakeryDataAccessObject;
 public class OrderDetailsDAO implements UABakeryDataAccessObject<OrderDetails> {
 
     @Override
-    public ArrayList getItems() {
+    public ArrayList<OrderDetails> getItems() {
         try{
             Connection con = ConnectionObj.getConnection();
             ArrayList<OrderDetails> list = new ArrayList<>();
