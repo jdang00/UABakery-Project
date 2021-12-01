@@ -3,7 +3,7 @@ package dao;
 import java.util.ArrayList;
 import entities.*;
 import interfaces.UABakeryDataAccessObject;
-
+import tools.DateTimeHandler;
 import connection_objects.ConnectionObj;
 import java.sql.*;
 
@@ -53,10 +53,12 @@ public class TransactionJournalDAO implements UABakeryDataAccessObject<Transacti
     @Override
     public void insert(TransactionJournal journal) {
         try{
+            Timestamp timestamp = new Timestamp(System.currentTimeMillis());
             Connection con = ConnectionObj.getConnection();
-            PreparedStatement pst = con.prepareStatement("INSERT INTO TRANSACTION_JOURNAL VALUES(DEFAULT, ?, ?, DEFAULT)");
+            PreparedStatement pst = con.prepareStatement("INSERT INTO TRANSACTION_JOURNAL VALUES(DEFAULT, ?, ?, ?)");
             pst.setString(1, journal.journalDescription);
             pst.setFloat(2, journal.journalAmount);
+            pst.setTimestamp(3, timestamp);
             pst.execute();
             con.close();
         }catch(Exception e){

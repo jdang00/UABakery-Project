@@ -5,6 +5,7 @@ import connection_objects.ConnectionObj;
 import java.sql.*;
 import entities.*;
 import interfaces.UABakeryDataAccessObject;
+import tools.DateTimeHandler;
 
 public class OrderDAO implements UABakeryDataAccessObject<Order> {
 
@@ -40,7 +41,7 @@ public class OrderDAO implements UABakeryDataAccessObject<Order> {
     public void delete(int id) {
         try{
             Connection con = ConnectionObj.getConnection();
-            PreparedStatement pst = con.prepareStatement("DELETE FROM ORDER WHERE ORDER_ID = ?");
+            PreparedStatement pst = con.prepareStatement("DELETE FROM ORDERS WHERE ORDER_ID = ?");
             pst.setInt(1, id);
             pst.execute();
             con.close();
@@ -52,11 +53,12 @@ public class OrderDAO implements UABakeryDataAccessObject<Order> {
     @Override
     public void insert(Order order) {
         try{
+            Date date = new Date(System.currentTimeMillis());
+            Time time = new Time(System.currentTimeMillis());
             Connection con = ConnectionObj.getConnection();
-            PreparedStatement pst = con.prepareStatement("INSERT INTO ORDER VALUES(DEFAULT, ?, ?, ?)");
-            pst.setString(1, order.date);
-            pst.setString(2, order.time);
-            pst.setInt(3, order.customerID);
+            PreparedStatement pst = con.prepareStatement("INSERT INTO ORDERS VALUES(DEFAULT, ?, ?, 1)");
+            pst.setDate(1, date);
+            pst.setTime(2, time);
             pst.execute();
             con.close();
         }catch(Exception e){

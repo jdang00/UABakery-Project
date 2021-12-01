@@ -14,7 +14,6 @@ import entities.TransactionJournal;
 import tools.MoneyHandler;
 
 import java.util.ArrayList;
-import java.util.List;
 
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
@@ -32,6 +31,7 @@ public class GUI extends javax.swing.JFrame {
 
 
     private BakeryItem selectedBakeryItem;
+    private ArrayList<BakeryItem> bakeryItems = new ArrayList();
 
 
     //Tyler: "Table Models"
@@ -68,14 +68,14 @@ public class GUI extends javax.swing.JFrame {
     public void refreshBakeryItems(){
         bakeryTableModel.setNumRows(0);
 
-        ArrayList<BakeryItem> myList = bakeryDAO.getItems();
+        bakeryItems = bakeryDAO.getItems();
         
 
-        for (int i = 0; i < myList.size(); i++) {
-            int id = myList.get(i).id;
-            String name = myList.get(i).name;
-            String description = myList.get(i).description;
-            float price = myList.get(i).price;
+        for (int i = 0; i < bakeryItems.size(); i++) {
+            int id = bakeryItems.get(i).id;
+            String name = bakeryItems.get(i).name;
+            String description = bakeryItems.get(i).description;
+            float price = bakeryItems.get(i).price;
 
             String[] row = new String[4];
             row[0] = String.valueOf(id);
@@ -161,44 +161,53 @@ public class GUI extends javax.swing.JFrame {
 
 
     private void validatePurchase(){
+
+        //Tyler: "So the user can't change the quantity mid purchase"
+
+        qty.setEditable(false);
         
         boolean enoughInventory = checkInventory();
 
 
         if(enoughInventory){
 
-            for(Recipe recipie : selectedBakeryItem.recipeItems){
+            for(Recipe recipie : getSelectedBakeryItem().recipeItems){
                 inventoryDAO.removeInventory(getQuantity() * recipie.invQuantityNeeded, recipie.invID);
             }
             
-            float userAmountPurchased =  getQuantity() * selectedBakeryItem.price;
+            float userAmountPurchased =  getQuantity() * getSelectedBakeryItem().price;
             
-            TransactionJournal journal = createTransactionJournal(getJournalPurchaseDesc(selectedBakeryItem.name, getQuantity()), userAmountPurchased);
+            TransactionJournal journal = createTransactionJournal(getJournalPurchaseDesc(getSelectedBakeryItem().name, getQuantity()), userAmountPurchased);
             transactionJournalDAO.insert(journal);
 
             transactionJournalDAO.addCompanyFunds(userAmountPurchased);
 
+            Order order = new Order();
+            order.customerID = 1;
 
-            System.out.println("Item purhcased! Company gained " + userAmountPurchased + " cash, and the user ordered " + getJournalPurchaseDesc(selectedBakeryItem.name, getQuantity()));
+            orderDAO.insert(order);
+
+
+            System.out.println("Item purhcased! Company gained " + userAmountPurchased + " cash, and the user ordered " + getJournalPurchaseDesc(getSelectedBakeryItem().name, getQuantity()));
 
 
 
         }else{
-            //Tyler: "If there isn't enough companyFunds, decline the entire order'"
+            //Tyler: "If there isn't enough companyFunds, decline the entire order"
             System.out.println("Not enough company funds!");
         }
         
         
         
         clearCart();
-            
-        
+
+        qty.setEditable(true);   
     }
 
 
     private boolean checkInventory(){
         
-        for(Recipe recipe : selectedBakeryItem.recipeItems){
+        for(Recipe recipe : getSelectedBakeryItem().recipeItems){
 
             //Tyler: "If there isn't enough inventory, order some more."
 
@@ -252,9 +261,7 @@ public class GUI extends javax.swing.JFrame {
         
     }
 
-
     private void clearCart(){
-        selectedBakeryItem = null;
         qty.setText("0");
     }
 
@@ -268,12 +275,22 @@ public class GUI extends javax.swing.JFrame {
     }
 
     private TransactionJournal createTransactionJournal(String description, float amount){
+
         TransactionJournal journal  = new TransactionJournal();
         journal.journalDescription = description;
         journal.journalAmount = amount;
 
         return journal;
 
+    }
+
+    private BakeryItem getSelectedBakeryItem(){
+        try{
+            BakeryItem item = bakeryItems.get(bakeryMenu.getSelectedRow());
+            return item;
+        }catch(Exception e){
+            return null;
+        }
     }
 
 
@@ -296,7 +313,7 @@ public class GUI extends javax.swing.JFrame {
         undoButton = new javax.swing.JButton();
         jPanel3 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
-        price = new javax.swing.JLabel();
+        totalLabel = new javax.swing.JLabel();
         mainPanel = new javax.swing.JPanel();
         shopLayout = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -319,7 +336,6 @@ public class GUI extends javax.swing.JFrame {
         jLabel2 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setPreferredSize(new java.awt.Dimension(1280, 720));
 
         jPanel1.setBackground(new java.awt.Color(255, 255, 255));
         jPanel1.setPreferredSize(new java.awt.Dimension(1280, 720));
@@ -361,8 +377,8 @@ public class GUI extends javax.swing.JFrame {
         jLabel1.setForeground(new java.awt.Color(123, 123, 123));
         jLabel1.setText("TOTAL:");
 
-        price.setFont(new java.awt.Font("SF Pro Rounded", 1, 48)); // NOI18N
-        price.setText("$0.00");
+        totalLabel.setFont(new java.awt.Font("SF Pro Rounded", 1, 48)); // NOI18N
+        totalLabel.setText("$0.00");
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
@@ -374,7 +390,7 @@ public class GUI extends javax.swing.JFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(price)
+                .addComponent(totalLabel)
                 .addGap(18, 18, 18))
         );
         jPanel3Layout.setVerticalGroup(
@@ -383,7 +399,7 @@ public class GUI extends javax.swing.JFrame {
                 .addGap(20, 20, 20)
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(price)
+                .addComponent(totalLabel)
                 .addGap(35, 35, 35))
         );
 
@@ -454,6 +470,11 @@ public class GUI extends javax.swing.JFrame {
         addButton.setBackground(new java.awt.Color(225, 225, 225));
         addButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/PhotoAssets/Add.png"))); // NOI18N
         addButton.setBorderPainted(false);
+        addButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addButtonActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
         jPanel5.setLayout(jPanel5Layout);
@@ -693,7 +714,9 @@ public class GUI extends javax.swing.JFrame {
     }//GEN-LAST:event_lowerHolderActionPerformed
 
     private void payButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_payButtonActionPerformed
-        // TODO add your handling code here:
+        
+        validatePurchase();
+
     }//GEN-LAST:event_payButtonActionPerformed
 
     private void menuButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuButtonActionPerformed
@@ -702,7 +725,7 @@ public class GUI extends javax.swing.JFrame {
         mainPanel.add(menuLayout);
         mainPanel.repaint();
         mainPanel.revalidate();     
-        
+
         
         
     }//GEN-LAST:event_menuButtonActionPerformed
@@ -736,7 +759,7 @@ public class GUI extends javax.swing.JFrame {
         
         ordersTableModel = new DefaultTableModel();
         ordersTableModel.addColumn("Order ID");
-        ordersTableModel.addColumn("Order Date");       
+        ordersTableModel.addColumn("Order Date");
         ordersTableModel.addColumn("Order Time");
         ordersTableModel.addColumn("Customer ID");
         
@@ -764,6 +787,17 @@ public class GUI extends javax.swing.JFrame {
         refreshInventoryTable(inventoryTableModel);
 
     }//GEN-LAST:event_inventoryButtonActionPerformed
+
+    private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
+       try{
+            totalLabel.setText(MoneyHandler.getFormattedMoney(getQuantity() * getSelectedBakeryItem().price));
+       }catch(Exception e){
+            totalLabel.setText("$0.00");
+            e.printStackTrace();
+
+            
+       }
+    }//GEN-LAST:event_addButtonActionPerformed
 
     /**
      * @param args the command line arguments
@@ -805,10 +839,10 @@ public class GUI extends javax.swing.JFrame {
     private javax.swing.JButton payButton;
     private javax.swing.JButton placeHolderLeft;
     private javax.swing.JButton placeHolderRight;
-    private javax.swing.JLabel price;
     private javax.swing.JTextField qty;
     private javax.swing.JButton shopButton;
     private javax.swing.JPanel shopLayout;
+    private javax.swing.JLabel totalLabel;
     private javax.swing.JButton undoButton;
     private javax.swing.JButton voidButton;
     // End of variables declaration//GEN-END:variables
