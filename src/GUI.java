@@ -6,7 +6,7 @@ import connection_objects.ConnectionObj;
 import javax.swing.table.DefaultTableModel;
 
 import dao.*;
-import entities.BakeryItems;
+import entities.BakeryItem;
 
 import java.util.List;
 
@@ -23,12 +23,16 @@ import java.util.List;
 
 
 public class GUI extends javax.swing.JFrame {
-    
+
+
+    //Tyler: "Table Models"
     private DefaultTableModel bakeryTable;
     private DefaultTableModel ordersTableModel;
     private DefaultTableModel transactionsTableModel;
     private DefaultTableModel inventoryTableModel;
-    BakeryItemsDAO bakeryDAO = new BakeryItemsDAO();
+
+    //Tyler: "DAO"
+    BakeryItemDAO bakeryDAO = new BakeryItemDAO();
 
     /**
      * Creates new form GUI
@@ -37,7 +41,6 @@ public class GUI extends javax.swing.JFrame {
         initComponents();
         initBakeryTable();
         refreshBakeryItems();
-        ConnectionObj.closeConnection();
     }
 
 
@@ -53,13 +56,14 @@ public class GUI extends javax.swing.JFrame {
     public void refreshBakeryItems(){
         bakeryTable.setNumRows(0);
 
-        List<BakeryItems> myList = bakeryDAO.getAllItemsFromDatabase();
+        List<BakeryItem> myList = bakeryDAO.getItems();
+        
 
         for (int i = 0; i < myList.size(); i++) {
-            int id = myList.get(i).getID();
-            String name = myList.get(i).getITEM_NAME();
-            String description = myList.get(i).getDESCRIPTION();
-            double price = myList.get(i).getPRICE();
+            int id = myList.get(i).id;
+            String name = myList.get(i).name;
+            String description = myList.get(i).description;
+            double price = myList.get(i).price;
 
             String[] row = new String[4];
             row[0] = id + "";

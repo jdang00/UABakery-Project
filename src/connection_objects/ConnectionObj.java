@@ -6,9 +6,11 @@ import java.sql.*;
 
 public class ConnectionObj {
 
-    static Connection con = null;
+    static Connection con;
 
     public static Connection getConnection() {
+
+        checkForDrivers();
 
         try {
             if(con == null || con.isClosed()) {
@@ -24,10 +26,22 @@ public class ConnectionObj {
     public static void closeConnection() {
         try {
             con.close();
+            System.out.println("Closing connection\n\n\n\n\n\n\n");
         } catch (SQLException ex) {
             System.out.println(ex);
         }
         
+    }
+
+    public static void checkForDrivers(){
+        try {
+            Class.forName("com.ibm.db2.jcc.DB2Driver");
+            System.out.println("Drivers loaded!");
+        } catch (Exception ex) {
+            System.out.println("Drivers not loaded!");
+            ex.printStackTrace();
+            return;
+        }
     }
 }
     

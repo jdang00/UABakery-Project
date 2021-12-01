@@ -8,18 +8,15 @@ package interfaces;
  *
  * @author justindang
  */
-import java.util.List;
+import java.util.ArrayList;
 
-public interface UABakeryInterface<UATYPE> {
+public interface UABakeryDataAccessObject<UATYPE> {
     
-    public List<UATYPE> getAllItemsFromDatabase();
+    public ArrayList<UATYPE> getItems();
 
-    public List<UATYPE> getItem(String key);
-
-    public void update(UATYPE item);
-
-    public void delete(UATYPE item);
+    public void delete(int id);
 
     public void insert(UATYPE item);
+
     
 }
