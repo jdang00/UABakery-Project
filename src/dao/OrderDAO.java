@@ -60,9 +60,15 @@ public class OrderDAO implements UABakeryDataAccessObject<Order> {
             pst.setDate(1, date);
             pst.setTime(2, time);
             pst.execute();
+            con.commit();
             con.close();
         }catch(Exception e){
             e.printStackTrace();
+            try{
+                ConnectionObj.getConnection().rollback();
+            }catch(Exception ex){
+                ex.printStackTrace();
+            }
         }
     }
 

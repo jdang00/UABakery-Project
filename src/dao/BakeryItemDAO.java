@@ -29,7 +29,7 @@ public class BakeryItemDAO implements UABakeryDataAccessObject<BakeryItem> {
                 list.add(item);
             }
 
-            ConnectionObj.closeConnection();
+            con.close();
 
             return list;
         }catch(Exception e){
@@ -47,9 +47,15 @@ public class BakeryItemDAO implements UABakeryDataAccessObject<BakeryItem> {
             PreparedStatement pst = con.prepareStatement("DELETE FROM BAKERY_ITEMS WHERE BAKERY_ITEM_ID = ?");
             pst.setInt(1, id);
             pst.execute();
+            con.commit();
             con.close();
         }catch(Exception e){
             e.printStackTrace();
+            try{
+                ConnectionObj.getConnection().rollback();
+            }catch(Exception ex){
+                ex.printStackTrace();
+            }
         }
         
     }
@@ -85,9 +91,15 @@ public class BakeryItemDAO implements UABakeryDataAccessObject<BakeryItem> {
             pst.setString(2, item.description);
             pst.setFloat(3, item.price);
             pst.execute();
+            con.commit();
             con.close();
         }catch(Exception e){
             e.printStackTrace();
+            try{
+                ConnectionObj.getConnection().rollback();
+            }catch(Exception ex){
+                ex.printStackTrace();
+            }
         }
         
     }

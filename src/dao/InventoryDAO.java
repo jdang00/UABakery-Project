@@ -50,10 +50,15 @@ public class InventoryDAO implements UABakeryDataAccessObject<Inventory> {
             pst.setInt(1, totalAmount);
             pst.setInt(2, invID);
             pst.execute();
+            con.commit();
             con.close();
             
         }catch(Exception e){
-            e.printStackTrace();
+            try{
+                ConnectionObj.getConnection().rollback();
+            }catch(Exception ex){
+                ex.printStackTrace();
+            }
         }
         
     }
@@ -65,9 +70,14 @@ public class InventoryDAO implements UABakeryDataAccessObject<Inventory> {
             pst.setInt(1, totalAmount);
             pst.setInt(2, invID);
             pst.execute();
+            con.commit();
             con.close();
         }catch(Exception e){
-            e.printStackTrace();
+            try{
+                ConnectionObj.getConnection().rollback();
+            }catch(Exception ex){
+                ex.printStackTrace();
+            }
         }
     
     }
@@ -124,9 +134,15 @@ public class InventoryDAO implements UABakeryDataAccessObject<Inventory> {
             pst.setInt(4, item.reorderAmount);
             pst.setFloat(5, item.reorderPrice);
             pst.execute();
+            con.commit();
             con.close();
         }catch(Exception e){
             e.printStackTrace();
+            try{
+                ConnectionObj.getConnection().rollback();
+            }catch(Exception ex){
+                ex.printStackTrace();
+            }
         }
     }
 

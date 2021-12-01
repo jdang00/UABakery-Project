@@ -60,9 +60,14 @@ public class TransactionJournalDAO implements UABakeryDataAccessObject<Transacti
             pst.setFloat(2, journal.journalAmount);
             pst.setTimestamp(3, timestamp);
             pst.execute();
+            con.commit();
             con.close();
         }catch(Exception e){
-            e.printStackTrace();
+            try{
+                ConnectionObj.getConnection().rollback();
+            }catch(Exception ex){
+                ex.printStackTrace();
+            }
         }
     }
 
@@ -71,8 +76,10 @@ public class TransactionJournalDAO implements UABakeryDataAccessObject<Transacti
             Connection con = ConnectionObj.getConnection();
             
             ResultSet rst = con.prepareStatement("SELECT JOURNAL_AMOUNT FROM TRANSACTION_JOURNAL WHERE JOURNAL_ID = 1").executeQuery();
+            int companyFunds = -1;
 
-            int companyFunds = rst.getInt(1);
+            if(rst.next())
+                companyFunds = rst.getInt(1);
 
             ConnectionObj.closeConnection();
 
@@ -89,10 +96,15 @@ public class TransactionJournalDAO implements UABakeryDataAccessObject<Transacti
             PreparedStatement pst = con.prepareStatement("UPDATE TRANSACTION_JOURNAL SET JOURNAL_AMOUNT = JOURNAL_AMOUNT + ? WHERE JOURNAL_ID = 1");
             pst.setFloat(1, amount);
             pst.execute();
+            con.commit();
             con.close();
             
         }catch(Exception e){
-            e.printStackTrace();
+            try{
+                ConnectionObj.getConnection().rollback();
+            }catch(Exception ex){
+                ex.printStackTrace();
+            }
         }
     }
 
@@ -106,10 +118,15 @@ public class TransactionJournalDAO implements UABakeryDataAccessObject<Transacti
 
             pst.setFloat(1, amount);
             pst.execute();
+            con.commit();
             con.close();
             
         }catch(Exception e){
-            e.printStackTrace();
+            try{
+                ConnectionObj.getConnection().rollback();
+            }catch(Exception ex){
+                ex.printStackTrace();
+            }
         }
     }
 
