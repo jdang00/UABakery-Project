@@ -176,7 +176,7 @@ public class GUI extends javax.swing.JFrame {
         boolean enoughInventory = checkInventory();
 
 
-        if(enoughInventory){
+        if(enoughInventory && selectedBakeryItem != null && getQuantity() > 0 && !totalIsEmpty()){
 
             for(Recipe recipie : selectedBakeryItem.recipeItems){
                 inventoryDAO.removeInventory(getQuantity() * recipie.invQuantityNeeded, recipie.invID);
@@ -198,11 +198,17 @@ public class GUI extends javax.swing.JFrame {
             MessageCreator.createSuccessMessage("Item purhcased! Company gained " + MoneyHandler.getFormattedMoney(userAmountPurchased) + " cash, and the user ordered " + getJournalPurchaseDesc(selectedBakeryItem.name, getQuantity()));
 
 
-        }else{
+        } else if( selectedBakeryItem == null ) {
+            MessageCreator.createErrorMessage("No Bakery Item Selected!");
+        } else if( getQuantity() <= 0 ){
+            MessageCreator.createErrorMessage("Quantity Must Be Greater Than 0!");
+        } else if (totalIsEmpty() ) {
+            MessageCreator.createErrorMessage("Add An Item To Your Cart First!");
+        }
+        else{
             //Tyler: "If there isn't enough companyFunds, decline the entire order"
             MessageCreator.createErrorMessage("Not enough company funds");
-        }
-        
+        } 
         
         
         clearCart();
@@ -238,6 +244,9 @@ public class GUI extends javax.swing.JFrame {
 
         try{
             int num = Integer.parseInt(qty.getText());
+
+
+
             return num;
         }catch(Exception e){
             qty.setText("0");
@@ -282,7 +291,10 @@ public class GUI extends javax.swing.JFrame {
     }
 
     private void clearCart(){
+        selectedBakeryItem = null;
         qty.setText("0");
+        totalLabel.setText("$0.00");
+        bakeryMenu.getSelectionModel().clearSelection();
     }
 
     private String getJournalReorderDesc(String inventoryItem, int quantity){
@@ -310,6 +322,10 @@ public class GUI extends javax.swing.JFrame {
         }catch(Exception e){
             return;
         }
+    }
+
+    private boolean totalIsEmpty(){
+        return totalLabel.getText().equals("$0.00");
     }
 
 
@@ -389,6 +405,11 @@ public class GUI extends javax.swing.JFrame {
 
         undoButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/PhotoAssets/Undo.png"))); // NOI18N
         undoButton.setBorderPainted(false);
+        undoButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                undoButtonActionPerformed(evt);
+            }
+        });
 
         jPanel3.setBackground(new java.awt.Color(225, 225, 225));
 
@@ -819,14 +840,22 @@ public class GUI extends javax.swing.JFrame {
 
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
         updateSelectedBakeryItem();
-       try{
-            totalLabel.setText(MoneyHandler.getFormattedMoney(getQuantity() * selectedBakeryItem.price));
-       }catch(Exception e){
-            totalLabel.setText("$0.00");
-            e.printStackTrace();
 
-            
-       }
+        if(selectedBakeryItem != null && getQuantity() > 0){
+
+            try{
+                    totalLabel.setText(MoneyHandler.getFormattedMoney(getQuantity() * selectedBakeryItem.price));
+            }catch(Exception e){
+                    totalLabel.setText("$0.00");
+                    e.printStackTrace();
+
+                    
+            }
+        } else if ( selectedBakeryItem == null ) {
+            MessageCreator.createErrorMessage("No Bakery Item Selected!");
+        } else {
+            MessageCreator.createErrorMessage("Quantity Must Be Greater Than 0!");
+        }
     }//GEN-LAST:event_addButtonActionPerformed
 
     private void qtyMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_qtyMouseExited
@@ -850,6 +879,10 @@ public class GUI extends javax.swing.JFrame {
             qty.setText("0");
         }
     }//GEN-LAST:event_qtyKeyReleased
+
+    private void undoButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_undoButtonActionPerformed
+        clearCart();
+    }//GEN-LAST:event_undoButtonActionPerformed
 
     /**
      * @param args the command line arguments
