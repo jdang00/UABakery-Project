@@ -378,6 +378,10 @@
                           <Font name="SF Pro Rounded" size="24" style="0"/>
                         </Property>
                       </Properties>
+                      <Events>
+                        <EventHandler event="mouseExited" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="qtyMouseExited"/>
+                        <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="qtyKeyReleased"/>
+                      </Events>
                     </Component>
                     <Component class="javax.swing.JButton" name="addButton">
                       <Properties>

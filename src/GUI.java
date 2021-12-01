@@ -3,6 +3,8 @@ import com.formdev.flatlaf.FlatLightLaf;
 
 import connection_objects.ConnectionObj;
 
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
 import dao.*;
@@ -11,6 +13,7 @@ import entities.Inventory;
 import entities.Order;
 import entities.Recipe;
 import entities.TransactionJournal;
+import tools.MessageCreator;
 import tools.MoneyHandler;
 
 import java.util.ArrayList;
@@ -165,19 +168,23 @@ public class GUI extends javax.swing.JFrame {
         //Tyler: "So the user can't change the quantity mid purchase"
 
         qty.setEditable(false);
+
+        updateSelectedBakeryItem();
+
+        bakeryMenu.setEnabled(false);
         
         boolean enoughInventory = checkInventory();
 
 
         if(enoughInventory){
 
-            for(Recipe recipie : getSelectedBakeryItem().recipeItems){
+            for(Recipe recipie : selectedBakeryItem.recipeItems){
                 inventoryDAO.removeInventory(getQuantity() * recipie.invQuantityNeeded, recipie.invID);
             }
             
-            float userAmountPurchased =  getQuantity() * getSelectedBakeryItem().price;
+            float userAmountPurchased =  getQuantity() * selectedBakeryItem.price;
             
-            TransactionJournal journal = createTransactionJournal(getJournalPurchaseDesc(getSelectedBakeryItem().name, getQuantity()), userAmountPurchased);
+            TransactionJournal journal = createTransactionJournal(getJournalPurchaseDesc(selectedBakeryItem.name, getQuantity()), userAmountPurchased);
             transactionJournalDAO.insert(journal);
 
             transactionJournalDAO.addCompanyFunds(userAmountPurchased);
@@ -188,13 +195,12 @@ public class GUI extends javax.swing.JFrame {
             orderDAO.insert(order);
 
 
-            System.out.println("Item purhcased! Company gained " + userAmountPurchased + " cash, and the user ordered " + getJournalPurchaseDesc(getSelectedBakeryItem().name, getQuantity()));
-
+            MessageCreator.createSuccessMessage("Item purhcased! Company gained " + MoneyHandler.getFormattedMoney(userAmountPurchased) + " cash, and the user ordered " + getJournalPurchaseDesc(selectedBakeryItem.name, getQuantity()));
 
 
         }else{
             //Tyler: "If there isn't enough companyFunds, decline the entire order"
-            System.out.println("Not enough company funds!");
+            MessageCreator.createErrorMessage("Not enough company funds");
         }
         
         
@@ -202,12 +208,13 @@ public class GUI extends javax.swing.JFrame {
         clearCart();
 
         qty.setEditable(true);   
+        bakeryMenu.setEnabled(true);
     }
 
 
     private boolean checkInventory(){
         
-        for(Recipe recipe : getSelectedBakeryItem().recipeItems){
+        for(Recipe recipe : selectedBakeryItem.recipeItems){
 
             //Tyler: "If there isn't enough inventory, order some more."
 
@@ -216,7 +223,7 @@ public class GUI extends javax.swing.JFrame {
             int currentQuantity = cInventory.quantity;
 
             if( quantityRequested > currentQuantity ){
-                if(!orderdMoreInventory(cInventory, quantityRequested - currentQuantity, cInventory.reorderPrice))
+                if(!orderdMoreInventory(cInventory, quantityRequested - currentQuantity))
                     return false;
             }
         }
@@ -239,18 +246,23 @@ public class GUI extends javax.swing.JFrame {
     }
 
 
-    private boolean orderdMoreInventory(Inventory inventory, int amountNeeded, float costs){
+    private boolean orderdMoreInventory(Inventory inventory, int amountNeeded){
 
         int companyFunds = transactionJournalDAO.getCompanyFunds();
 
-        float inventoryCosts = MoneyHandler.getRoundedMoney(amountNeeded * costs);
+        int reorderMultiplier = getReorderAmountMultiplier(inventory, amountNeeded);
+
+        int amountToReorder = inventory.reorderAmount * reorderMultiplier;
+
+        float inventoryCosts = MoneyHandler.getRoundedMoney(reorderMultiplier * inventory.reorderPrice);
 
         if(companyFunds < inventoryCosts)
             return false;
         else {
-            inventoryDAO.addInventory(amountNeeded, inventory.id);
+            
+            inventoryDAO.addInventory(amountToReorder, inventory.id);
 
-            TransactionJournal journal = createTransactionJournal(getJournalReorderDesc(inventory.name, amountNeeded), -costs);
+            TransactionJournal journal = createTransactionJournal(getJournalReorderDesc(inventory.name, amountToReorder), -inventoryCosts);
             transactionJournalDAO.insert(journal);
 
             transactionJournalDAO.subtractCompanyFunds(inventoryCosts);
@@ -261,12 +273,20 @@ public class GUI extends javax.swing.JFrame {
         
     }
 
+    private int getReorderAmountMultiplier(Inventory inventory, int amountNeeded){
+        int i = 0;
+
+        while (++i * inventory.reorderAmount < amountNeeded){}
+
+        return i;
+    }
+
     private void clearCart(){
         qty.setText("0");
     }
 
     private String getJournalReorderDesc(String inventoryItem, int quantity){
-        return "ORDERING INVENTORY ITEM " + inventoryItem + "WITH A QUANTITY OF " + String.valueOf(quantity);
+        return "ORDERING INVENTORY ITEM " + inventoryItem + " WITH A QUANTITY OF " + String.valueOf(quantity);
     }
 
 
@@ -284,12 +304,11 @@ public class GUI extends javax.swing.JFrame {
 
     }
 
-    private BakeryItem getSelectedBakeryItem(){
+    private void updateSelectedBakeryItem(){
         try{
-            BakeryItem item = bakeryItems.get(bakeryMenu.getSelectedRow());
-            return item;
+            selectedBakeryItem = bakeryItems.get(bakeryMenu.getSelectedRow());
         }catch(Exception e){
-            return null;
+            return;
         }
     }
 
@@ -466,6 +485,16 @@ public class GUI extends javax.swing.JFrame {
         jPanel5.setBackground(new java.awt.Color(225, 225, 225));
 
         qty.setFont(new java.awt.Font("SF Pro Rounded", 0, 24)); // NOI18N
+        qty.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                qtyMouseExited(evt);
+            }
+        });
+        qty.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                qtyKeyReleased(evt);
+            }
+        });
 
         addButton.setBackground(new java.awt.Color(225, 225, 225));
         addButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/PhotoAssets/Add.png"))); // NOI18N
@@ -789,8 +818,9 @@ public class GUI extends javax.swing.JFrame {
     }//GEN-LAST:event_inventoryButtonActionPerformed
 
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
+        updateSelectedBakeryItem();
        try{
-            totalLabel.setText(MoneyHandler.getFormattedMoney(getQuantity() * getSelectedBakeryItem().price));
+            totalLabel.setText(MoneyHandler.getFormattedMoney(getQuantity() * selectedBakeryItem.price));
        }catch(Exception e){
             totalLabel.setText("$0.00");
             e.printStackTrace();
@@ -798,6 +828,28 @@ public class GUI extends javax.swing.JFrame {
             
        }
     }//GEN-LAST:event_addButtonActionPerformed
+
+    private void qtyMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_qtyMouseExited
+        try{
+
+            if(!qty.getText().equals(""))
+                Integer.parseInt(qty.getText());
+
+        }catch(Exception e){
+            qty.setText("0");
+        }
+    }//GEN-LAST:event_qtyMouseExited
+
+    private void qtyKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_qtyKeyReleased
+        try{
+        
+            if(!qty.getText().equals(""))
+                Integer.parseInt(qty.getText());
+
+        }catch(Exception e){
+            qty.setText("0");
+        }
+    }//GEN-LAST:event_qtyKeyReleased
 
     /**
      * @param args the command line arguments
