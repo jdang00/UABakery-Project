@@ -1,8 +1,13 @@
 
 import com.formdev.flatlaf.FlatLightLaf;
+
+import connection_objects.ConnectionObj;
+
 import javax.swing.table.DefaultTableModel;
-import ConnectionObjects.ConnectionObj;
-import DataAccessObjects.*;
+
+import dao.*;
+import entities.BakeryItems;
+
 import java.util.List;
 
 /*
@@ -23,36 +28,32 @@ public class GUI extends javax.swing.JFrame {
     private DefaultTableModel ordersTableModel;
     private DefaultTableModel transactionsTableModel;
     private DefaultTableModel inventoryTableModel;
-    BakeryItemsDAO itemsDAO = new BakeryItemsDAO();
+    BakeryItemsDAO bakeryDAO = new BakeryItemsDAO();
 
     /**
      * Creates new form GUI
      */
     public GUI() {
         initComponents();
-        fillTables(); // This method fills every table with data
+        initBakeryTable();
+        refreshBakeryItems();
         ConnectionObj.closeConnection();
     }
-    
-    public void fillTables(){
-        
+
+
+    private void initBakeryTable(){
         bakeryTable = new DefaultTableModel();
         bakeryTable.addColumn("ID");
         bakeryTable.addColumn("Name");
         bakeryTable.addColumn("Description");
         bakeryTable.addColumn("Price");
         bakeryMenu.setModel(bakeryTable);
-        
-        
-        
-        refreshItems();
-        
-        
     }
-    public void refreshItems(){
+
+    public void refreshBakeryItems(){
         bakeryTable.setNumRows(0);
 
-        List<BakeryItems> myList = itemsDAO.getAllItemsFromDatabase();
+        List<BakeryItems> myList = bakeryDAO.getAllItemsFromDatabase();
 
         for (int i = 0; i < myList.size(); i++) {
             int id = myList.get(i).getID();

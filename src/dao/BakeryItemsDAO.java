@@ -2,12 +2,16 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package DataAccessObjects;
+package dao;
 import java.util.*;
 import java.sql.*;
-import ConnectionObjects.ConnectionObj;
+
+import interfaces.UABakeryInterface;
 
 import java.util.List;
+
+import connection_objects.ConnectionObj;
+import entities.BakeryItems;
 
 /**
  *

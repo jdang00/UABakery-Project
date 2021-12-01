@@ -1,0 +1,11 @@
+{
+    "java.project.referencedLibraries": [
+        "lib/**/*.jar",
+        "c:\\Users\\tyler\\Documents\\CodingFolder\\SchoolProjects\\DBS2\\Drivers\\db2jcc_license_cu.jar",
+        "c:\\Users\\tyler\\Documents\\CodingFolder\\SchoolProjects\\DBS2\\Drivers\\db2jcc4.jar",
+        "c:\\Users\\tyler\\Documents\\CodingFolder\\SchoolProjects\\DBS2\\Drivers\\flatlaf-1.6.4.jar",
+        "c:\\Users\\tyler\\Documents\\CodingFolder\\SchoolProjects\\DBS2\\Drivers\\itextpdf-5.5.9.jar",
+        "c:\\Users\\tyler\\Documents\\CodingFolder\\SchoolProjects\\DBS2\\Drivers\\jBCrypt-0.4.1.jar",
+        "c:\\Users\\tyler\\Documents\\CodingFolder\\SchoolProjects\\DBS2\\Drivers\\postgresql-42.3.1.jar"
+    ]
+}
