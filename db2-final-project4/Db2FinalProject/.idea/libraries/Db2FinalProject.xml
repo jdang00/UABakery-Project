@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="Db2FinalProject">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/dist/Db2FinalProject.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
