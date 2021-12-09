@@ -10,8 +10,8 @@ package connection_objects;
  */
 public interface DriverTemplate {
 
-      static final String user = "uafs404";
-      static final String pass = "UApass415";
+      static final String user = "group1";
+      static final String pass = "UApass5003";
       static final String url = "jdbc:db2://data.cis.uafs.edu:55000/CS2043";
 
 }

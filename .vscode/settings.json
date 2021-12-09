@@ -1,11 +1,21 @@
 {
-    "java.project.referencedLibraries": [
-        "lib/**/*.jar",
-        "c:\\Users\\tyler\\Documents\\CodingFolder\\SchoolProjects\\DBS2\\Drivers\\db2jcc_license_cu.jar",
-        "c:\\Users\\tyler\\Documents\\CodingFolder\\SchoolProjects\\DBS2\\Drivers\\db2jcc4.jar",
-        "c:\\Users\\tyler\\Documents\\CodingFolder\\SchoolProjects\\DBS2\\Drivers\\flatlaf-1.6.4.jar",
-        "c:\\Users\\tyler\\Documents\\CodingFolder\\SchoolProjects\\DBS2\\Drivers\\itextpdf-5.5.9.jar",
-        "c:\\Users\\tyler\\Documents\\CodingFolder\\SchoolProjects\\DBS2\\Drivers\\jBCrypt-0.4.1.jar",
-        "c:\\Users\\tyler\\Documents\\CodingFolder\\SchoolProjects\\DBS2\\Drivers\\postgresql-42.3.1.jar"
-    ]
+    "java.project.referencedLibraries": {
+        "include": [
+            "lib/**/*.jar",
+            "c:\\Users\\tyler\\Documents\\CodingFolder\\SchoolProjects\\DBS2\\Drivers\\db2jcc_license_cu.jar",
+            "c:\\Users\\tyler\\Documents\\CodingFolder\\SchoolProjects\\DBS2\\Drivers\\db2jcc4.jar",
+            "c:\\Users\\tyler\\Documents\\CodingFolder\\SchoolProjects\\DBS2\\Drivers\\flatlaf-1.6.4.jar",
+            "c:\\Users\\tyler\\Documents\\CodingFolder\\SchoolProjects\\DBS2\\Drivers\\itextpdf-5.5.9.jar",
+            "c:\\Users\\tyler\\Documents\\CodingFolder\\SchoolProjects\\DBS2\\Drivers\\jBCrypt-0.4.1.jar",
+            "c:\\Users\\tyler\\Documents\\CodingFolder\\SchoolProjects\\DBS2\\Drivers\\postgresql-42.3.1.jar",
+            "/Users/tyler/Documents/Coding Folder/**/*.jar"
+        ],
+        "exclude": [
+            "dist/Db2FinalProject.jar",
+            "dist/lib/db2jcc4.jar",
+            "dist/lib/db2jcc_license_cu.jar",
+            "/Users/tyler/Documents/Coding Folder/Drivers/bcrypt-0.4.1.jar",
+            "/Users/tyler/Documents/Coding Folder/Drivers/bytes-0.4.6.jar"
+        ]
+    }
 }
