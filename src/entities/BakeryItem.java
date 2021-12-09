@@ -1,7 +1,7 @@
-/* 	Name: Tyler Johnson
-	Username: uafs408
-	Problem Set: PS4
-	Due Date: October 12th, 2021
+/* 	Name: Tyler Johnson, Justin Dang, Branigan Geoates
+	Username: group1
+	Problem Set: Final Project
+	Due Date: December 9th, 2021
 */
 package entities;
 import java.util.ArrayList;

@@ -1,3 +1,9 @@
+/* 	Name: Tyler Johnson, Justin Dang, Branigan Geoates
+	Username: group1
+	Problem Set: Final Project
+	Due Date: December 9th, 2021
+*/
+
 
 import com.formdev.flatlaf.FlatLightLaf;
 
@@ -195,7 +201,7 @@ public class GUI extends javax.swing.JFrame {
             orderDAO.insert(order);
 
 
-            MessageCreator.createSuccessMessage("Item purhcased! Company gained " + MoneyHandler.getFormattedMoney(userAmountPurchased) + " cash, and the user ordered " + getJournalPurchaseDesc(selectedBakeryItem.name, getQuantity()));
+            MessageCreator.createSuccessMessage("Success! Item '" +  selectedBakeryItem.name + "' x" + getQuantity() + " purchased!");
 
 
         } else if( selectedBakeryItem == null ) {

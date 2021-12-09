@@ -1,3 +1,9 @@
+/* 	Name: Tyler Johnson, Justin Dang, Branigan Geoates
+	Username: group1
+	Problem Set: Final Project
+	Due Date: December 9th, 2021
+*/
+
 package connection_objects;
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license

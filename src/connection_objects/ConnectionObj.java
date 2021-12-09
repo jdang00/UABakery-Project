@@ -1,3 +1,9 @@
+/* 	Name: Tyler Johnson, Justin Dang, Branigan Geoates
+	Username: group1
+	Problem Set: Final Project
+	Due Date: December 9th, 2021
+*/
+
 package connection_objects;
 
 import static connection_objects.DriverTemplate.*;
